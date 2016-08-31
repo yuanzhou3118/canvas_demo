@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="format-detection" content="telephone=no">
+	<title>CJ</title>
+	<script src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
+	<style type="text/css">
+	#myCanvas{
+		background: #ddd;
+	}
+	</style>
+</head>
+<body>
+<canvas id="myCanvas" width="490" height="450"></canvas>
+	<script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>
+</body>
+
+<script type="text/javascript">
+	var canvas = $('#myCanvas')[0];
+	stage = new createjs.Stage(canvas);
+
+	var floorImg = 'http://cdn.gbtags.com/gblibraryassets/libid108/ground.png';
+	var floorheight = 70;
+	var stageWidth = canvas.width,stageHeight = canvas.height;
+
+	//定义小人的位移高度
+	var spritesheet;
+	var characterHeight = 96;
+	var characterGround = stageHeight-floorheight-characterHeight;//人的位移高度
+
+
+	//定义移动
+	var xVel = 5;//步长
+	var yVel = 0;
+	var moveLeft = false;
+	var moveRight = false;
+	var KEYCODE_LEFT = 37;
+	var KEYCODE_RIGHT = 39;
+	var KEYCODE_UP = 38;
+	var KEYCODE_A= 65;
+	var KEYCODE_D = 68;
+	var KEYCODE_W= 87;
+	var isJumping = false;
+	var gravity = 1.2;
+
+	$(function(){
+		function setup(){
+			var ground = new createjs.Bitmap(floorImg);
+			for (var i = 0; i < 7; i++) {
+				var tmpGround = ground.clone();
+				tmpGround.x = i*70;
+				tmpGround.y = stageHeight-floorheight;
+				stage.addChild(tmpGround);
+			}
+
+			spritesheet = new createjs.SpriteSheet({
+				"frames":{"height":characterHeight,"count":10,"width":75},
+				"images":['http://cdn.gbtags.com/gblibraryassets/libid108/charactor.png'],
+				"animations": {run: [0, 9]}
+			});
+			character = new createjs.Sprite(spritesheet);
+			character.x = 100;
+			character.y = characterGround;
+			stage.addChild(character);
+
+			// character.play();
+
+			createjs.Ticker.addEventListener("tick", tick);
+			// $(document).keydown(handleKeyDown);
+			// $(document).keyup(handleKeyDown);
+			document.onkeydown = handleKeyDown;
+      		document.onkeyup = handleKeyUp;
+		}
+
+		function handleKeyDown(e){
+			console.log(e.keyCode);
+			switch(e.keyCode){
+				case KEYCODE_A:
+				case KEYCODE_LEFT:
+					moveLeft = true;
+					character.play();
+					break;
+				case KEYCODE_D:
+				case KEYCODE_RIGHT:
+					moveRight = true;
+					character.play();
+					break;
+				case KEYCODE_UP:
+				case KEYCODE_W:
+					jump();
+					break;
+			}
+		}
+
+		function handleKeyUp(e){
+			console.log(e.keyCode);
+			switch(e.keyCode){
+				case KEYCODE_A:
+				case KEYCODE_LEFT:
+					moveLeft = false;
+					character.gotoAndStop(0);
+					break;
+				case KEYCODE_D:
+				case KEYCODE_RIGHT:
+					moveRight = false;
+					character.gotoAndStop(0);
+					break;
+			}
+		}
+
+		function jump() {
+		      if (isJumping == false) {
+		          yVel = -15;
+		          isJumping = true;
+		      }
+		  }
+
+		function tick(event){
+			if(moveLeft){
+				character.x -= xVel;
+				if (character.scaleX > 0) {
+		              console.log(character.scaleX);
+		              character.scaleX *= -1;
+		              character.x += 100;
+		          }
+			}else if(moveRight){
+				character.x += xVel;
+				if (character.scaleX < 0) {
+		              character.scaleX *= -1;
+		              character.x -= 100;
+		          }
+			}
+			if(isJumping){
+				yVel += gravity;
+				character.y +=yVel;	
+				if(character.y > characterGround){
+					yVel = 0;
+					character.y = characterGround;
+					isJumping = false;
+				}
+			}
+
+			stage.update();
+		}
+
+		setup();
+	})
+</script>
+
+</html>
